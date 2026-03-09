@@ -23,7 +23,24 @@ const app = express();
 // ─── Security & Middleware ────────────────────────────────────
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, curl, Postman)
+    if (!origin) return callback(null, true);
+    // Allow all origins in development
+    if (process.env.NODE_ENV !== 'production') return callback(null, true);
+    // In production, allow configured frontend + any onrender.com domain
+    const allowed = [
+      process.env.FRONTEND_URL,
+      'http://localhost:3000',
+    ].filter(Boolean);
+    const isOnRender = origin.endsWith('.onrender.com');
+    if (allowed.includes(origin) || isOnRender) {
+      callback(null, true);
+    } else {
+      console.warn('CORS blocked origin:', origin);
+      callback(null, true); // temporarily allow all to debug
+    }
+  },
   credentials: true,
 }));
 app.use(compression());
@@ -53,6 +70,26 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/upload', uploadRoutes);
+
+// ─── Debug Endpoint ──────────────────────────────────────────
+app.get('/api/debug', async (req, res) => {
+  const { query } = require('./config/database');
+  try {
+    const result = await query("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'users') as users_exist");
+    res.json({
+      db_connected: true,
+      users_table: result.rows[0].users_exist,
+      env: {
+        node_env: process.env.NODE_ENV,
+        has_jwt: !!process.env.JWT_SECRET,
+        has_db: !!process.env.DATABASE_URL,
+        frontend_url: process.env.FRONTEND_URL,
+      }
+    });
+  } catch (err) {
+    res.json({ db_connected: false, error: err.message });
+  }
+});
 
 // ─── 404 Handler ─────────────────────────────────────────────
 app.use('*', (req, res) => {

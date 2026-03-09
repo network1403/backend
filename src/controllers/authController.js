@@ -19,6 +19,7 @@ const generateTokens = (userId) => {
 
 const register = async (req, res, next) => {
   try {
+    console.log('📝 Register attempt:', { body: req.body, headers: req.headers.origin });
     const { username, display_name, email, password } = req.body;
 
     if (!username || !display_name || !email || !password) {
@@ -61,6 +62,7 @@ const register = async (req, res, next) => {
 
 const login = async (req, res, next) => {
   try {
+    console.log('🔑 Login attempt:', { email: req.body.email });
     const { email, password } = req.body;
     if (!email || !password) {
       return res.status(400).json({ error: 'Email and password are required' });
