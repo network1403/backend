@@ -4,10 +4,10 @@
   "description": "QuizZer Backend API",
   "main": "src/app.js",
   "scripts": {
-  "dev": "vite",
-  "preview": "vite preview",
-  "start": "vite preview --host 0.0.0.0 --port 10000"
-},
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js",
+    "build": "echo 'No build step for backend'"
+  },
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "compression": "^1.7.4",
@@ -24,12 +24,7 @@
     "uuid": "^10.0.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.4",
-    "@vitejs/plugin-react": "^4.3.1",
-    "vite": "^5.4.0",
-    "tailwindcss": "^3.4.9",
-    "autoprefixer": "^10.4.20",
-    "postcss": "^8.4.41"
+    "nodemon": "^3.1.4"
   },
   "engines": {
     "node": ">=18.0.0"
